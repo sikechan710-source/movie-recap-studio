@@ -94,7 +94,7 @@
             <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-300 to-pink-400">
                 🎬 AI Movie Recap Studio
             </h1>
-            <p class="text-xs text-gray-300 mt-1">Mobile Edition • Pure Gemini AI Logic</p>
+            <p class="text-xs text-gray-300 mt-1">Mobile Edition • Ratio Selection Engine</p>
         </header>
 
         <!-- Main Form Container -->
@@ -105,7 +105,8 @@
                 <label class="text-sm font-semibold text-blue-300 flex items-center gap-2">
                     <i class="fa-solid fa-key"></i> 1. Gemini API Key ထည့်သွင်းပါ
                 </label>
-                <input type="password" id="apiKey" class="w-full p-3 rounded-xl liquid-input text-sm" placeholder="AIzaSy... (Own API Key)">
+                <input type="password" id="apiKey" oninput="saveApiKey()" class="w-full p-3 rounded-xl liquid-input text-sm" placeholder="AIzaSy... (Own API Key)">
+                <p class="text-[10px] text-gray-400">💡 ထည့်သွင်းထားသော API Key ကို ဖုန်း Browser ထဲတွင် အလိုအလျောက် မှတ်သားထားမည်။</p>
             </div>
 
             <!-- 2. Video Upload Section -->
@@ -122,9 +123,21 @@
 
             <video id="sourceVideo" class="hidden" playsinline></video>
 
-            <!-- Video Live Preview Canvas -->
-            <div id="previewContainer" class="hidden liquid-glass p-3 text-center space-y-2">
+            <!-- Video Live Preview Canvas & Ratio Selector -->
+            <div id="previewContainer" class="hidden liquid-glass p-4 space-y-3 text-center">
                 <p class="text-xs font-semibold text-gray-300" id="videoInfoLabel">Live Preview Canvas</p>
+                
+                <!-- Video Aspect Ratio Option Buttons -->
+                <div class="space-y-1 text-left">
+                    <label class="text-[11px] text-gray-300 font-semibold">Video Ratio (ပုံစံအချိုး) ရွေးရန်:</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" onclick="setRatio('16:9')" class="ratio-btn liquid-glass-card py-2 text-xs font-semibold bg-blue-600">16:9 (YouTube)</button>
+                        <button type="button" onclick="setRatio('9:16')" class="ratio-btn liquid-glass-card py-2 text-xs font-semibold">9:16 (TikTok/Shorts)</button>
+                        <button type="button" onclick="setRatio('1:1')" class="ratio-btn liquid-glass-card py-2 text-xs font-semibold">1:1 (Square)</button>
+                        <button type="button" onclick="setRatio('4:3')" class="ratio-btn liquid-glass-card py-2 text-xs font-semibold">4:3 (Classic)</button>
+                    </div>
+                </div>
+
                 <div class="relative overflow-hidden rounded-lg flex justify-center bg-black/40">
                     <canvas id="videoCanvas" class="max-w-full h-auto rounded-lg"></canvas>
                 </div>
@@ -235,13 +248,22 @@
                         <i class="fa-solid fa-file-lines"></i> 12. SRT Subtitle ဖိုင် ဒေါင်းလုဒ်လုပ်ရန်
                     </button>
 
+                    <button onclick="downloadFile('voiceover')" class="w-full py-3 rounded-xl bg-indigo-600/60 border border-indigo-400/40 text-xs font-semibold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-waveform"></i> Voiceover Script (အသံသွင်းရန် စာသား) ဒေါင်းလုဒ်လုပ်ရန်
+                    </button>
+
                     <button onclick="downloadFile('audio')" class="w-full py-3 rounded-xl bg-teal-600/60 border border-teal-400/40 text-xs font-semibold flex items-center justify-center gap-2">
                         <i class="fa-solid fa-music"></i> 13. Audio File (MP3/WAV) ဒေါင်းလုဒ်လုပ်ရန်
                     </button>
                 </div>
 
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-300">11. AI မှ ထုတ်ပေးလိုက်သော SRT Subtitles:</label>
+                <div class="space-y-1 relative">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-semibold text-gray-300">11. AI မှ ထုတ်ပေးလိုက်သော SRT Subtitles:</label>
+                        <button onclick="copySrtText()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-[10px] rounded-lg border border-white/20 flex items-center gap-1 transition">
+                            <i class="fa-solid fa-copy"></i> Copy SRT
+                        </button>
+                    </div>
                     <textarea id="srtPreview" class="w-full h-40 p-3 rounded-xl liquid-input text-xs font-mono"></textarea>
                 </div>
             </div>
@@ -333,17 +355,37 @@
 
 
         /* ===================================================
-           2. MAIN APPLICATION LOGIC & DIRECT GEMINI API CALL
+           2. MAIN APPLICATION LOGIC & RATIO SELECTOR
            =================================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('gemini_api_key');
+            if(savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+            }
+        });
+
+        function saveApiKey() {
+            const key = document.getElementById('apiKey').value;
+            localStorage.setItem('gemini_api_key', key);
+        }
+
         let uploadedFile = null;
         let selectedDuration = 5;
+        let selectedRatio = '16:9';
         let generatedSrtText = "";
         const sourceVideo = document.getElementById('sourceVideo');
 
         function setOption(type, val) {
             if(type === 'duration') selectedDuration = val;
-            document.querySelectorAll('.duration-btn').forEach(btn => btn.classList.remove('bg-blue-600'));
+            event.target.parentElement.querySelectorAll('button').forEach(btn => btn.classList.remove('bg-blue-600'));
             event.target.classList.add('bg-blue-600');
+        }
+
+        function setRatio(ratioVal) {
+            selectedRatio = ratioVal;
+            document.querySelectorAll('.ratio-btn').forEach(btn => btn.classList.remove('bg-blue-600'));
+            event.target.classList.add('bg-blue-600');
+            updateCanvasPreview();
         }
 
         function handleVideoUpload(e) {
@@ -376,13 +418,30 @@
             const zoom = document.getElementById('zoomRange').value / 100;
             const filter = document.getElementById('colorFilter').value;
 
-            canvas.width = 320;
-            canvas.height = 180;
+            // Adjust Canvas Dimensions based on Selected Ratio
+            let cWidth = 320;
+            let cHeight = 180; // Default 16:9
+
+            if(selectedRatio === '9:16') {
+                cWidth = 180;
+                cHeight = 320;
+            } else if(selectedRatio === '1:1') {
+                cWidth = 240;
+                cHeight = 240;
+            } else if(selectedRatio === '4:3') {
+                cWidth = 240;
+                cHeight = 180;
+            }
+
+            canvas.width = cWidth;
+            canvas.height = cHeight;
 
             vCtx.clearRect(0, 0, canvas.width, canvas.height);
             vCtx.save();
 
+            vCtx.translate(canvas.width / 2, canvas.height / 2);
             vCtx.scale(zoom, zoom);
+            vCtx.translate(-canvas.width / 2, -canvas.height / 2);
 
             if(filter === 'cinematic') vCtx.filter = 'contrast(120%) hue-rotate(180deg)';
             else if(filter === 'warm') vCtx.filter = 'sepia(50%) brightness(110%)';
@@ -415,7 +474,7 @@
 
             const promptText = `
 မင်းက Movie/Series Recap Voiceover Script ရေးသားသူဖြစ်ပါတယ်။ 
-အောက်ပါဗီဒီယိုဖိုင်အမည်: "${uploadedFile.name}" ကို အခြေခံပြီး မြန်မာဘာသာဖြင့် စိတ်ဝင်စားဖွယ် Movie Recap Script တစ်ခုကို ရေးပေးပါ။
+အောက်ပါဗီဒီယိုဖိုင်အမည်: "${uploadedFile.name}" (Ratio: ${selectedRatio}) ကို အခြေခံပြီး မြန်မာဘာသာဖြင့် စိတ်ဝင်စားဖွယ် Movie Recap Script တစ်ခုကို ရေးပေးပါ။
 စုစုပေါင်း Recap ကြာမြင့်ချိန်: ${selectedDuration} မိနစ်။
 Recap ပြောကြားမည့်ပုံစံ: ${recapStyle}။
 
@@ -453,6 +512,14 @@ Recap ပြောကြားမည့်ပုံစံ: ${recapStyle}။
             }
         }
 
+        function copySrtText() {
+            const srtBox = document.getElementById('srtPreview');
+            srtBox.select();
+            srtBox.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(srtBox.value);
+            alert("SRT စာသားများကို ကူးယူပြီးပါပြီ (Copied)!");
+        }
+
         function downloadFile(type) {
             let fileContent = "";
             let fileName = "";
@@ -462,14 +529,18 @@ Recap ပြောကြားမည့်ပုံစံ: ${recapStyle}။
                 fileContent = generatedSrtText;
                 fileName = "movie_recap.srt";
                 mimeType = "text/plain";
+            } else if(type === 'voiceover') {
+                fileContent = generatedSrtText.replace(/\d+\n\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}\n/g, '');
+                fileName = "voiceover_script.txt";
+                mimeType = "text/plain";
             } else if(type === 'audio') {
                 fileContent = generatedSrtText;
                 fileName = "recap_audio_script.txt";
                 mimeType = "text/plain";
             } else if(type === 'video') {
                 const quality = document.getElementById('videoQuality').value;
-                fileContent = "Processed Video File Metadata";
-                fileName = `recap_video_${quality}.mp4`;
+                fileContent = `Processed Video File [Ratio: ${selectedRatio}, Quality: ${quality}]`;
+                fileName = `recap_video_${selectedRatio.replace(':', '_')}_${quality}.mp4`;
                 mimeType = "video/mp4";
             }
 
