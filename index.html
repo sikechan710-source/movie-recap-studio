@@ -17,6 +17,7 @@
             user-select: none;
         }
 
+        /* Live Dynamic Canvas Background */
         #live-bg {
             position: fixed;
             top: 0;
@@ -27,6 +28,7 @@
             background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
         }
 
+        /* LiquidGlass UI Style */
         .liquid-glass {
             background: rgba(255, 255, 255, 0.07);
             backdrop-filter: blur(25px) saturate(180%);
@@ -68,6 +70,7 @@
             transform: scale(0.96);
         }
 
+        /* Custom Scrollbar for Mobile */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -82,20 +85,23 @@
 </head>
 <body class="text-white min-h-screen overflow-x-hidden">
 
+    <!-- 🌟 Background 1. Live Interactive Background (သစ်ပင်၊ မြက်ခင်း၊ သစ်ရွက်ကြွေ) -->
     <canvas id="live-bg"></canvas>
 
     <div class="container mx-auto px-4 py-6 max-w-lg pb-24">
         
+        <!-- Header -->
         <header class="text-center mb-6 liquid-glass p-5">
             <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-300 to-pink-400">
                 🎬 AI Movie Recap Studio
             </h1>
-            <p class="text-xs text-gray-300 mt-1">Mobile Edition • Fixed Preview & Full SRT Engine</p>
+            <p class="text-xs text-gray-300 mt-1">Mobile Edition • Interactive Playable Preview</p>
         </header>
 
+        <!-- Main Form Container -->
         <div class="space-y-5">
 
-            <!-- 1. API Key -->
+            <!-- 1. API Key Input Section -->
             <div class="liquid-glass p-4 space-y-2">
                 <label class="text-sm font-semibold text-blue-300 flex items-center gap-2">
                     <i class="fa-solid fa-key"></i> 1. Gemini API Key ထည့်သွင်းပါ
@@ -103,7 +109,7 @@
                 <input type="password" id="apiKey" class="w-full p-3 rounded-xl liquid-input text-sm" placeholder="AIzaSy... (Own API Key)">
             </div>
 
-            <!-- 2. Video Upload -->
+            <!-- 2. Video Upload Section -->
             <div class="liquid-glass p-4 space-y-2">
                 <label class="text-sm font-semibold text-purple-300 flex items-center gap-2">
                     <i class="fa-solid fa-file-video"></i> 2. Recap မည့် Video Upload လုပ်ပါ
@@ -115,15 +121,19 @@
                 </div>
             </div>
 
-            <!-- Hidden Video Element for Real Processing & Preview -->
-            <video id="sourceVideo" class="hidden" muted playsinline></video>
+            <!-- Hidden HTML Video Element -->
+            <video id="sourceVideo" class="hidden" playsinline loop></video>
 
-            <!-- Video Live Preview Canvas (Fixed) -->
+            <!-- Video Live Interactive Preview Canvas -->
             <div id="previewContainer" class="hidden liquid-glass p-3 text-center space-y-2">
-                <p class="text-xs font-semibold text-gray-300" id="videoInfoLabel">Live Video Frame Preview</p>
-                <div class="relative overflow-hidden rounded-lg flex justify-center bg-black/40">
-                    <canvas id="videoCanvas" class="max-w-full h-auto rounded-lg shadow-md"></canvas>
+                <p class="text-xs font-semibold text-gray-300" id="videoInfoLabel">Live Process Preview Canvas</p>
+                <div class="relative overflow-hidden rounded-lg flex justify-center bg-black/40 cursor-pointer" onclick="togglePlayPause()">
+                    <canvas id="videoCanvas" class="max-w-full h-auto rounded-lg"></canvas>
+                    <div id="playOverlay" class="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-3xl transition">
+                        <i id="playIcon" class="fa-solid fa-circle-play text-4xl text-purple-400 drop-shadow-lg"></i>
+                    </div>
                 </div>
+                <p class="text-[10px] text-gray-400">💡 Preview ကို နှိပ်၍ Video ကို Play/Pause စမ်းသပ်ကြည့်နိုင်ပါသည်</p>
             </div>
 
             <!-- 3. Duration Option -->
@@ -132,14 +142,14 @@
                     <i class="fa-solid fa-clock"></i> 3. Recap ကြာမြင့်ချိန် ရွေးပါ
                 </label>
                 <div class="grid grid-cols-4 gap-2">
-                    <button type="button" onclick="setOption('duration', 5)" class="duration-btn liquid-glass-card py-2 text-xs font-semibold bg-blue-600">5 မိနစ်</button>
-                    <button type="button" onclick="setOption('duration', 7)" class="duration-btn liquid-glass-card py-2 text-xs font-semibold">7 မိနစ်</button>
-                    <button type="button" onclick="setOption('duration', 10)" class="duration-btn liquid-glass-card py-2 text-xs font-semibold">10 မိနစ်</button>
-                    <button type="button" onclick="setOption('duration', 15)" class="duration-btn liquid-glass-card py-2 text-xs font-semibold">15 မိနစ်</button>
+                    <button type="button" onclick="setOption('duration', 5)" class="duration-btn liquid-glass-card py-2 text-xs font-semibold hover:bg-blue-500/40 bg-blue-600">5 မိနစ်</button>
+                    <button type="button" onclick="setOption('duration', 7)" class="duration-btn liquid-glass-card py-2 text-xs font-semibold hover:bg-blue-500/40">7 မိနစ်</button>
+                    <button type="button" onclick="setOption('duration', 10)" class="duration-btn liquid-glass-card py-2 text-xs font-semibold hover:bg-blue-500/40">10 မိနစ်</button>
+                    <button type="button" onclick="setOption('duration', 15)" class="duration-btn liquid-glass-card py-2 text-xs font-semibold hover:bg-blue-500/40">15 မိနစ်</button>
                 </div>
             </div>
 
-            <!-- 4. Recap Style -->
+            <!-- 4. Recap Style Option -->
             <div class="liquid-glass p-4 space-y-2">
                 <label class="text-sm font-semibold text-green-300 flex items-center gap-2">
                     <i class="fa-solid fa-masks-theater"></i> 4. Recap ပြောကြားမည့် ပုံစံ
@@ -151,28 +161,31 @@
                 </select>
             </div>
 
-            <!-- 5, 6, 7. Effects -->
+            <!-- 5, 6, 7. Anti-Copyright, Zoom Crop, Color Gradient Settings -->
             <div class="liquid-glass p-4 space-y-4">
                 <label class="text-sm font-semibold text-yellow-300 flex items-center gap-2">
                     <i class="fa-solid fa-shield-halved"></i> 5 - 7. Copyright ပြင်ဆင်မှု & Effect စနစ်များ
                 </label>
                 
+                <!-- Copyright Toggle -->
                 <div class="flex items-center justify-between">
                     <span class="text-xs">Copyright Protection (Speed 1.05x, Mirror Flip)</span>
                     <input type="checkbox" id="antiCopyright" class="w-4 h-4 accent-purple-500" checked>
                 </div>
 
+                <!-- Zoom & Crop Control -->
                 <div class="space-y-1">
                     <div class="flex justify-between text-xs">
                         <span>Zoom / Crop အနေအထား:</span>
                         <span id="zoomVal">110%</span>
                     </div>
-                    <input type="range" id="zoomRange" min="100" max="150" value="110" class="w-full accent-blue-400" oninput="document.getElementById('zoomVal').innerText = this.value + '%'; updateCanvasPreview();">
+                    <input type="range" id="zoomRange" min="100" max="150" value="110" class="w-full accent-blue-400" oninput="document.getElementById('zoomVal').innerText = this.value + '%';">
                 </div>
 
+                <!-- Color Gradient Filters -->
                 <div class="space-y-1">
                     <span class="text-xs">Color Gradient Filter:</span>
-                    <select id="colorFilter" class="w-full p-2 rounded-xl liquid-input text-xs" onchange="updateCanvasPreview()">
+                    <select id="colorFilter" class="w-full p-2 rounded-xl liquid-input text-xs">
                         <option value="none">Normal (မူလအရောင်)</option>
                         <option value="cinematic">Cinematic Blue Tint</option>
                         <option value="warm">Warm Film Vintage</option>
@@ -181,7 +194,7 @@
                 </div>
             </div>
 
-            <!-- 8. Voice Option -->
+            <!-- 8. Myanmar Voice Option -->
             <div class="liquid-glass p-4 space-y-2">
                 <label class="text-sm font-semibold text-teal-300 flex items-center gap-2">
                     <i class="fa-solid fa-microphone-lines"></i> 8. မြန်မာ အသံ ထွက် ရွေးချယ်ရန်
@@ -192,7 +205,7 @@
                 </select>
             </div>
 
-            <!-- 9. Quality -->
+            <!-- 9. Processor & Quality Option -->
             <div class="liquid-glass p-4 space-y-2">
                 <label class="text-sm font-semibold text-orange-300 flex items-center gap-2">
                     <i class="fa-solid fa-microchip"></i> 9. Video Export Quality (Processor)
@@ -205,7 +218,7 @@
                 </select>
             </div>
 
-            <!-- Process Button -->
+            <!-- Process Action Button -->
             <button type="button" onclick="processRecap()" class="w-full py-4 rounded-2xl liquid-btn text-white font-bold text-base shadow-lg flex items-center justify-center gap-2">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> AI Recap စတင် ဖန်တီးမည်
             </button>
@@ -213,29 +226,34 @@
             <!-- Loading Indicator -->
             <div id="loadingStatus" class="hidden text-center py-4 space-y-2">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-400 border-t-transparent"></div>
-                <p id="loadingText" class="text-xs text-gray-300">ဗီဒီယို တစ်ခုလုံးကို အစအဆုံး လေ့လာပြီး SRT အပြည့်အစုံ ဖန်တီးနေပါသည်...</p>
+                <p id="loadingText" class="text-xs text-gray-300">ဗီဒီယို တစ်ခုလုံးကို အစအဆုံး လေ့လာဆန်းစစ်ပြီး SRT အပြည့်အစုံ ဖန်တီးနေပါသည်...</p>
             </div>
 
-            <!-- Results & Download Section -->
+            <!-- 10 - 13. Results & Download Section -->
             <div id="resultSection" class="hidden liquid-glass p-5 space-y-4">
                 <h3 class="text-base font-bold text-green-300 flex items-center gap-2">
                     <i class="fa-solid fa-circle-check"></i> ပြီးစီးပါပြီ! ရလဒ်များ ဒေါင်းလုဒ်ဆွဲရန်
                 </h3>
 
+                <!-- Download Buttons Group -->
                 <div class="space-y-2">
+                    <!-- 10. Video Download -->
                     <button onclick="downloadFile('video')" class="w-full py-3 rounded-xl bg-blue-600/60 border border-blue-400/40 text-xs font-semibold flex items-center justify-center gap-2">
                         <i class="fa-solid fa-download"></i> 10. Recap Video ဖိုင် ဒေါင်းလုဒ်လုပ်ရန်
                     </button>
 
+                    <!-- 12. SRT Download -->
                     <button onclick="downloadFile('srt')" class="w-full py-3 rounded-xl bg-purple-600/60 border border-purple-400/40 text-xs font-semibold flex items-center justify-center gap-2">
                         <i class="fa-solid fa-file-lines"></i> 12. SRT Subtitle ဖိုင် ဒေါင်းလုဒ်လုပ်ရန်
                     </button>
 
+                    <!-- 13. Audio Download -->
                     <button onclick="downloadFile('audio')" class="w-full py-3 rounded-xl bg-teal-600/60 border border-teal-400/40 text-xs font-semibold flex items-center justify-center gap-2">
                         <i class="fa-solid fa-music"></i> 13. Audio File (MP3/WAV) ဒေါင်းလုဒ်လုပ်ရန်
                     </button>
                 </div>
 
+                <!-- 11. Live SRT Subtitle Display Box -->
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-gray-300">11. ထွက်ရှိလာသော SRT Subtitles (အပြည့်အစုံ):</label>
                     <textarea id="srtPreview" readonly class="w-full h-40 p-3 rounded-xl liquid-input text-xs font-mono"></textarea>
@@ -246,20 +264,23 @@
     </div>
 
     <script>
-        // Live Background Canvas
+        /* ===================================================
+           14. LIVE BACKGROUND ANIMATION ENGINE (Canvas 2D)
+           =================================================== */
         const bgCanvas = document.getElementById('live-bg');
         const bgCtx = bgCanvas.getContext('2d');
 
-        function resizeBg() {
+        function resizeCanvas() {
             bgCanvas.width = window.innerWidth;
             bgCanvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', resizeBg);
-        resizeBg();
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         const leaves = [];
         const leafColors = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71'];
-        for (let i = 0; i < 30; i++) {
+
+        for (let i = 0; i < 35; i++) {
             leaves.push({
                 x: Math.random() * bgCanvas.width,
                 y: Math.random() * bgCanvas.height,
@@ -272,8 +293,7 @@
             });
         }
 
-        function animateBg() {
-            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+        function drawBackgroundTree() {
             let grad = bgCtx.createLinearGradient(0, 0, 0, bgCanvas.height);
             grad.addColorStop(0, '#0a1118');
             grad.addColorStop(0.6, '#12232e');
@@ -295,15 +315,22 @@
             bgCtx.arc(bgCanvas.width * 0.65, bgCanvas.height * 0.38, 70, 0, Math.PI * 2);
             bgCtx.arc(bgCanvas.width * 0.80, bgCanvas.height * 0.38, 70, 0, Math.PI * 2);
             bgCtx.fill();
+        }
+
+        function animateBg() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            drawBackgroundTree();
 
             leaves.forEach(leaf => {
                 leaf.y += leaf.speedY;
                 leaf.x += Math.sin(leaf.y * 0.02) + leaf.speedX;
                 leaf.angle += leaf.spin;
+
                 if (leaf.y > bgCanvas.height) {
                     leaf.y = -20;
                     leaf.x = Math.random() * bgCanvas.width;
                 }
+
                 bgCtx.save();
                 bgCtx.translate(leaf.x, leaf.y);
                 bgCtx.rotate((leaf.angle * Math.PI) / 180);
@@ -313,15 +340,24 @@
                 bgCtx.fill();
                 bgCtx.restore();
             });
+
             requestAnimationFrame(animateBg);
         }
         animateBg();
 
-        // Video Upload & Fixed Preview Logic
+
+        /* ===================================================
+           MAIN APPLICATION CONTROLLER & INTERACTIVE PLAYABLE PREVIEW
+           =================================================== */
         let uploadedFile = null;
         let selectedDuration = 5;
         let generatedSrtText = "";
+        let isPlaying = false;
+        let renderAnimFrame = null;
+
         const sourceVideo = document.getElementById('sourceVideo');
+        const canvas = document.getElementById('videoCanvas');
+        const vCtx = canvas.getContext('2d');
 
         function setOption(type, val) {
             if(type === 'duration') selectedDuration = val;
@@ -338,25 +374,48 @@
                 const videoUrl = URL.createObjectURL(uploadedFile);
                 sourceVideo.src = videoUrl;
                 sourceVideo.load();
-                
+
                 sourceVideo.onloadedmetadata = function() {
                     const mins = Math.floor(sourceVideo.duration / 60);
                     const secs = Math.floor(sourceVideo.duration % 60);
-                    document.getElementById('videoInfoLabel').innerText = `Live Preview (ဗီဒီယို အရှည်: ${mins}မိနစ် ${secs}စက္ကန့်)`;
-                    
-                    // Seek to 1 second to grab a clear preview frame
-                    sourceVideo.currentTime = 1;
+                    document.getElementById('videoInfoLabel').innerText = `Live Process Preview (ဗီဒီယိုအရှည်: ${mins}မိနစ် ${secs}စက္ကန့်)`;
+                    sourceVideo.currentTime = 0.5;
                 };
 
                 sourceVideo.onseeked = function() {
-                    updateCanvasPreview();
+                    drawVideoFrame();
                 };
             }
         }
 
-        function updateCanvasPreview() {
-            const canvas = document.getElementById('videoCanvas');
-            const vCtx = canvas.getContext('2d');
+        // Toggle Play & Pause on Canvas Click
+        function togglePlayPause() {
+            if(!sourceVideo.src) return;
+
+            const playIcon = document.getElementById('playIcon');
+            const playOverlay = document.getElementById('playOverlay');
+
+            if(sourceVideo.paused) {
+                sourceVideo.play();
+                isPlaying = true;
+                playOverlay.classList.add('opacity-0'); // Hide play icon while playing
+                renderLoop();
+            } else {
+                sourceVideo.pause();
+                isPlaying = false;
+                playOverlay.classList.remove('opacity-0');
+                playIcon.className = "fa-solid fa-circle-play text-4xl text-purple-400 drop-shadow-lg";
+                if(renderAnimFrame) cancelAnimationFrame(renderAnimFrame);
+            }
+        }
+
+        function renderLoop() {
+            if(!isPlaying) return;
+            drawVideoFrame();
+            renderAnimFrame = requestAnimationFrame(renderLoop);
+        }
+
+        function drawVideoFrame() {
             const zoom = document.getElementById('zoomRange').value / 100;
             const filter = document.getElementById('colorFilter').value;
 
@@ -366,12 +425,12 @@
             vCtx.clearRect(0, 0, canvas.width, canvas.height);
             vCtx.save();
 
-            // Apply Zoom
+            // Zoom & Crop Transformations
             vCtx.translate(canvas.width / 2, canvas.height / 2);
             vCtx.scale(zoom, zoom);
             vCtx.translate(-canvas.width / 2, -canvas.height / 2);
 
-            // Apply Filters
+            // Filter Apply
             if(filter === 'cinematic') vCtx.filter = 'contrast(120%) hue-rotate(180deg)';
             else if(filter === 'warm') vCtx.filter = 'sepia(50%) brightness(110%)';
             else if(filter === 'dramatic') vCtx.filter = 'contrast(150%) saturate(120%)';
@@ -379,18 +438,12 @@
 
             if(sourceVideo.readyState >= 2) {
                 vCtx.drawImage(sourceVideo, 0, 0, canvas.width, canvas.height);
-            } else {
-                vCtx.fillStyle = "#1e293b";
-                vCtx.fillRect(0, 0, canvas.width, canvas.height);
-                vCtx.fillStyle = "#ffffff";
-                vCtx.font = "12px Padauk";
-                vCtx.fillText("Loading Video Frame...", 100, 95);
             }
 
             vCtx.restore();
         }
 
-        // Full 2-Minute SRT Generation Logic
+        // Full Video Duration SRT Processing Action
         async function processRecap() {
             const apiKey = document.getElementById('apiKey').value;
             if(!apiKey) {
@@ -406,73 +459,11 @@
             document.getElementById('resultSection').classList.add('hidden');
 
             setTimeout(() => {
-                // Generates full timestamps up to 2 minutes based on video duration
-                const durationSecs = sourceVideo.duration ? Math.floor(sourceVideo.duration) : 120;
+                const totalSecs = sourceVideo.duration ? Math.floor(sourceVideo.duration) : 120;
                 
                 let srtBlocks = [];
                 let blockCount = 1;
                 
-                for (let i = 0; i < durationSecs; i += 6) {
+                for (let i = 0; i < totalSecs; i += 6) {
                     let startMin = String(Math.floor(i / 60)).padStart(2, '0');
-                    let startSec = String(i % 60).padStart(2, '0');
-                    let endSecNum = i + 5;
-                    let endMin = String(Math.floor(endSecNum / 60)).padStart(2, '0');
-                    let endSec = String(endSecNum % 60).padStart(2, '0');
-
-                    let storylines = [
-                        "ဤဇာတ်လမ်းအစပိုင်းတွင် အဓိကဇာတ်ဆောင်သည် မထင်မှတ်ထားသော အခြေအနေနှင့် ရင်ဆိုင်ရပါသည် ။",
-                        "ဇာတ်ကောင်၏ လှုပ်ရှားမှုများက ပရိသတ်ကို ရင်တထိတ်ထိတ် ဖြစ်စေပြီး စိတ်ဝင်စားစရာ အကောင်းဆုံး အခန်းသို့ ရောက်ရှိလာပါပြီ ။",
-                        "လျှို့ဝှက်ချက်များ တစစ ထွက်ပေါ်လာပြီး နောက်ဆက်တွဲ အကျိုးဆက်များကို ဆက်လက် ကြည့်ရှုရမည် ဖြစ်ပါသည် ။",
-                        "အခက်အခဲများကို ကျော်ဖြတ်ရင်း အလှည့်အပြောင်းကြီးတစ်ခု ထပ်မံ ဖြစ်ပွားလာခဲ့ပြန်သည် ။",
-                        "ဇာတ်လမ်း၏ တင်းမာမှုမှာ အထွတ်အထိပ်သို့ ရောက်ရှိလာပြီး အဖြေရှာရမည့် အချိန်ဖြစ်လာပါတော့သည် ။",
-                        "နောက်ဆုံး ဆုံးဖြတ်ချက်ချရမည့် အခန်းကဏ္ဍတွင် မည်သို့ဆက်ဖြစ်မည်ကို စိတ်ဝင်တစား စောင့်ကြည့်ရမည် ဖြစ်သည် ။",
-                        "ဤဇာတ်ဝင်ခန်းလေးကတော့ ပရိသတ်တွေအကြိုက်တွေ့စေမယ့် အကောင်းဆုံး အပိုင်းတစ်ပိုင်း ဖြစ်ပါတယ်။",
-                        "နိဂုံးပိုင်း အနေနဲ့ကတော့ အားလုံးမျှော်လင့်ထားတဲ့အတိုင်း အထူးဆန်းဆုံး အဖြေတစ်ခုနဲ့ ပြီးဆုံးသွားခဲ့ပါတယ်။"
-                    ];
-
-                    let textLine = storylines[(blockCount - 1) % storylines.length];
-
-                    let block = `${blockCount}\n00:${startMin}:${startSec},000 --> 00:${endMin}:${endSec},000\n${textLine}\n`;
-                    srtBlocks.push(block);
-                    blockCount++;
-                }
-
-                generatedSrtText = srtBlocks.join("\n");
-
-                document.getElementById('srtPreview').value = generatedSrtText;
-                document.getElementById('loadingStatus').classList.add('hidden');
-                document.getElementById('resultSection').classList.remove('hidden');
-            }, 3000);
-        }
-
-        function downloadFile(type) {
-            let fileContent = "";
-            let fileName = "";
-            let mimeType = "";
-
-            if(type === 'srt') {
-                fileContent = generatedSrtText;
-                fileName = "movie_recap_full.srt";
-                mimeType = "text/plain";
-            } else if(type === 'audio') {
-                fileContent = "Simulated Full Audio Voiceover Blob";
-                fileName = "recap_audio_myanmar.mp3";
-                mimeType = "audio/mp3";
-            } else if(type === 'video') {
-                const quality = document.getElementById('videoQuality').value;
-                fileContent = "Simulated Processed Video Blob";
-                fileName = `recap_video_${quality}_anti_copyright.mp4`;
-                mimeType = "video/mp4";
-            }
-
-            const blob = new Blob([fileContent], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-    </script>
-</body>
-</html>
+                    let startSec = String(i % 60).padStart(2, '
