@@ -94,7 +94,7 @@
             <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-300 to-pink-400">
                 🎬 AI Movie Recap Studio
             </h1>
-            <p class="text-xs text-gray-300 mt-1">Mobile Edition • Gemini API Standard Fix</p>
+            <p class="text-xs text-gray-300 mt-1">Mobile Edition • Gemini 3.8 Engine</p>
         </header>
 
         <!-- Main Form Container -->
@@ -236,7 +236,7 @@
             <!-- Loading Indicator -->
             <div id="loadingStatus" class="hidden text-center py-4 space-y-2">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-400 border-t-transparent"></div>
-                <p id="loadingText" class="text-xs text-gray-300">Gemini AI မှ ဗီဒီယိုအတွက် SRT Script ကို တိုက်ရိုက် ရေးသားနေပါသည်...</p>
+                <p id="loadingText" class="text-xs text-gray-300">Gemini 3.8 AI မှ ဗီဒီယိုအတွက် SRT Script ကို တိုက်ရိုက် ရေးသားနေပါသည်...</p>
             </div>
 
             <!-- Results & Download Section -->
@@ -361,7 +361,7 @@
 
 
         /* ===================================================
-           2. MAIN APPLICATION LOGIC & FIXED GEMINI API CALL
+           2. MAIN APPLICATION LOGIC & GEMINI 3.8 MODEL ENDPOINT
            =================================================== */
         window.addEventListener('DOMContentLoaded', () => {
             const savedKey = localStorage.getItem('gemini_api_key');
@@ -488,7 +488,7 @@
             vCtx.restore();
         }
 
-        // Standardized Gemini REST API Call
+        // Updated Gemini 3.8 Flash Endpoint Call
         async function processRecap() {
             const rawApiKey = document.getElementById('apiKey').value.trim();
             if(!rawApiKey) {
@@ -516,8 +516,8 @@ Recap ပြောကြားမည့်ပုံစံ: ${recapStyle}။
 - SRT Subtitle ပုံစံဖြင့် အချိန် Timestamp များပါဝင်သော စာသားများအဖြစ်သာ ထုတ်ပေးပါ။ (ဥပမာ- 1, 00:00:00,000 --> 00:00:05,000 စသည်ဖြင့်)။
             `;
 
-            // Official Standard API Endpoint with Header Auth
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${rawApiKey}`;
+            // Updated to gemini-3.8-flash model endpoint
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${rawApiKey}`;
 
             try {
                 const response = await fetch(apiUrl, {
