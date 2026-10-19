@@ -17,7 +17,7 @@
             user-select: none;
         }
 
-        /* 🌟 Live Background Canvas (မူလအတိုင်း အပြည့်အစုံ) */
+        /* 🌟 Live Background Canvas */
         #live-bg {
             position: fixed;
             top: 0;
@@ -84,7 +84,7 @@
 </head>
 <body class="text-white min-h-screen overflow-x-hidden">
 
-    <!-- 🌟 Background (သစ်ပင်၊ မြက်ခင်း၊ သစ်ရွက်ကြွေ Live Background) -->
+    <!-- 🌟 Live Background Canvas -->
     <canvas id="live-bg"></canvas>
 
     <div class="container mx-auto px-4 py-6 max-w-lg pb-24">
@@ -94,7 +94,7 @@
             <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-300 to-pink-400">
                 🎬 AI Movie Recap Studio
             </h1>
-            <p class="text-xs text-gray-300 mt-1">Mobile Edition • LiquidGlass Engine</p>
+            <p class="text-xs text-gray-300 mt-1">Mobile Edition • Pure Gemini AI Logic</p>
         </header>
 
         <!-- Main Form Container -->
@@ -120,12 +120,11 @@
                 </div>
             </div>
 
-            <!-- Hidden Video Element for Processing -->
             <video id="sourceVideo" class="hidden" playsinline></video>
 
             <!-- Video Live Preview Canvas -->
             <div id="previewContainer" class="hidden liquid-glass p-3 text-center space-y-2">
-                <p class="text-xs font-semibold text-gray-300" id="videoInfoLabel">Live Process Preview Canvas</p>
+                <p class="text-xs font-semibold text-gray-300" id="videoInfoLabel">Live Preview Canvas</p>
                 <div class="relative overflow-hidden rounded-lg flex justify-center bg-black/40">
                     <canvas id="videoCanvas" class="max-w-full h-auto rounded-lg"></canvas>
                 </div>
@@ -218,7 +217,7 @@
             <!-- Loading Indicator -->
             <div id="loadingStatus" class="hidden text-center py-4 space-y-2">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-400 border-t-transparent"></div>
-                <p id="loadingText" class="text-xs text-gray-300">ဗီဒီယို တစ်ခုလုံးကို လေ့လာဆန်းစစ်နေပါသည်။ မကြာမီ ပြီးပါတော့မည်...</p>
+                <p id="loadingText" class="text-xs text-gray-300">Gemini AI မှ ဗီဒီယိုအတွက် SRT Script ကို တိုက်ရိုက် ရေးသားနေပါသည်...</p>
             </div>
 
             <!-- Results & Download Section -->
@@ -242,8 +241,8 @@
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-300">11. ထွက်ရှိလာသော SRT Subtitles (အပြည့်အစုံ):</label>
-                    <textarea id="srtPreview" readonly class="w-full h-40 p-3 rounded-xl liquid-input text-xs font-mono"></textarea>
+                    <label class="text-xs font-semibold text-gray-300">11. AI မှ ထုတ်ပေးလိုက်သော SRT Subtitles:</label>
+                    <textarea id="srtPreview" class="w-full h-40 p-3 rounded-xl liquid-input text-xs font-mono"></textarea>
                 </div>
             </div>
 
@@ -252,7 +251,7 @@
 
     <script>
         /* ===================================================
-           1. LIVE BACKGROUND ANIMATION ENGINE (သစ်ပင်၊ မြက်ခင်း၊ သစ်ရွက်ကြွေ)
+           1. LIVE BACKGROUND ANIMATION ENGINE
            =================================================== */
         const bgCanvas = document.getElementById('live-bg');
         const ctx = bgCanvas.getContext('2d');
@@ -334,7 +333,7 @@
 
 
         /* ===================================================
-           2. MAIN APPLICATION LOGIC & VIDEO PREVIEW FIX
+           2. MAIN APPLICATION LOGIC & DIRECT GEMINI API CALL
            =================================================== */
         let uploadedFile = null;
         let selectedDuration = 5;
@@ -392,18 +391,12 @@
 
             if(sourceVideo.readyState >= 2) {
                 vCtx.drawImage(sourceVideo, 0, 0, canvas.width, canvas.height);
-            } else {
-                vCtx.fillStyle = "#1e293b";
-                vCtx.fillRect(0, 0, canvas.width, canvas.height);
-                vCtx.fillStyle = "#ffffff";
-                vCtx.font = "12px Padauk";
-                vCtx.fillText("Loading Video...", 110, 95);
             }
 
             vCtx.restore();
         }
 
-        // Full 2-Minute SRT Generation Logic
+        // Direct Gemini API Call Function
         async function processRecap() {
             const apiKey = document.getElementById('apiKey').value;
             if(!apiKey) {
@@ -415,44 +408,49 @@
                 return;
             }
 
+            const recapStyle = document.getElementById('recapStyle').value;
+
             document.getElementById('loadingStatus').classList.remove('hidden');
             document.getElementById('resultSection').classList.add('hidden');
 
-            setTimeout(() => {
-                const totalSecs = sourceVideo.duration ? Math.floor(sourceVideo.duration) : 120;
-                let srtBlocks = [];
-                let blockCount = 1;
-                
-                for (let i = 0; i < totalSecs; i += 6) {
-                    let startMin = String(Math.floor(i / 60)).padStart(2, '0');
-                    let startSec = String(i % 60).padStart(2, '0');
-                    let endSecNum = Math.min(i + 5, totalSecs);
-                    let endMin = String(Math.floor(endSecNum / 60)).padStart(2, '0');
-                    let endSec = String(endSecNum % 60).padStart(2, '0');
+            const promptText = `
+မင်းက Movie/Series Recap Voiceover Script ရေးသားသူဖြစ်ပါတယ်။ 
+အောက်ပါဗီဒီယိုဖိုင်အမည်: "${uploadedFile.name}" ကို အခြေခံပြီး မြန်မာဘာသာဖြင့် စိတ်ဝင်စားဖွယ် Movie Recap Script တစ်ခုကို ရေးပေးပါ။
+စုစုပေါင်း Recap ကြာမြင့်ချိန်: ${selectedDuration} မိနစ်။
+Recap ပြောကြားမည့်ပုံစံ: ${recapStyle}။
 
-                    let storylines = [
-                        "ဤဇာတ်လမ်းအစပိုင်းတွင် အဓိကဇာတ်ဆောင်သည် မထင်မှတ်ထားသော အခြေအနေနှင့် ရင်ဆိုင်ရပါသည် ။",
-                        "ဇာတ်ကောင်၏ လှုပ်ရှားမှုများက ပရိသတ်ကို ရင်တထိတ်ထိတ် ဖြစ်စေပြီး စိတ်ဝင်စားစရာ အကောင်းဆုံး အခန်းသို့ ရောက်ရှိလာပါပြီ ။",
-                        "လျှို့ဝှက်ချက်များ တစစ ထွက်ပေါ်လာပြီး နောက်ဆက်တွဲ အကျိုးဆက်များကို ဆက်လက် ကြည့်ရှုရမည် ဖြစ်ပါသည် ။",
-                        "အခက်အခဲများကို ကျော်ဖြတ်ရင်း အလှည့်အပြောင်းကြီးတစ်ခု ထပ်မံ ဖြစ်ပွားလာခဲ့ပြန်သည် ။",
-                        "ဇာတ်လမ်း၏ တင်းမာမှုမှာ အထွတ်အထိပ်သို့ ရောက်ရှိလာပြီး အဖြေရှာရမည့် အချိန်ဖြစ်လာပါတော့သည် ။",
-                        "နောက်ဆုံး ဆုံးဖြတ်ချက်ချရမည့် အခန်းကဏ္ဍတွင် မည်သို့ဆက်ဖြစ်မည်ကို စိတ်ဝင်တစား စောင့်ကြည့်ရမည် ဖြစ်သည် ။",
-                        "ဤဇာတ်ဝင်ခန်းလေးကတော့ ပရိသတ်တွေအကြိုက်တွေ့စေမယ့် အကောင်းဆုံး အပိုင်းတစ်ပိုင်း ဖြစ်ပါတယ်။",
-                        "နိဂုံးပိုင်း အနေနဲ့ကတော့ အားလုံးမျှော်လင့်ထားတဲ့အတိုင်း အထူးဆန်းဆုံး အဖြေတစ်ခုနဲ့ ပြီးဆုံးသွားခဲ့ပါတယ်။"
-                    ];
+စည်းမျဉ်းများ:
+- ကြည့်ရှုသူကို ဆွဲဆောင်နိုင်မည့် အဖွင့် (Intro)၊ ဇာတ်လမ်း၏ စိတ်လှုပ်ရှားဖွယ် အချိုးအကွေ့များ (Body) နှင့် နိဂုံး (Outro) တို့ ပါဝင်ရပါမည်။
+- SRT Subtitle ပုံစံဖြင့် အချိန် Timestamp များပါဝင်သော စာသားများအဖြစ်သာ ထုတ်ပေးပါ။ (ဥပမာ- 1, 00:00:00,000 --> 00:00:05,000 စသည်ဖြင့်)။
+            `;
 
-                    let textLine = storylines[(blockCount - 1) % storylines.length];
-                    let block = `${blockCount}\n00:${startMin}:${startSec},000 --> 00:${endMin}:${endSec},000\n${textLine}\n`;
-                    srtBlocks.push(block);
-                    blockCount++;
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: promptText }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    generatedSrtText = data.candidates[0].content.parts[0].text;
+                    document.getElementById('srtPreview').value = generatedSrtText;
+                } else {
+                    alert("Gemini API ထံမှ တုံ့ပြန်မှု ရယူရာတွင် အမှားအယွင်း ရှိနေပါသည်။ API Key ကို ပြန်စစ်ပါ။");
                 }
-
-                generatedSrtText = srtBlocks.join("\n");
-
-                document.getElementById('srtPreview').value = generatedSrtText;
+            } catch (error) {
+                alert("API ရယူရာတွင် Error ဖြစ်ပေါ်ခဲ့ပါသည်: " + error.message);
+            } finally {
                 document.getElementById('loadingStatus').classList.add('hidden');
                 document.getElementById('resultSection').classList.remove('hidden');
-            }, 3000);
+            }
         }
 
         function downloadFile(type) {
@@ -462,15 +460,15 @@
 
             if(type === 'srt') {
                 fileContent = generatedSrtText;
-                fileName = "movie_recap_full.srt";
+                fileName = "movie_recap.srt";
                 mimeType = "text/plain";
             } else if(type === 'audio') {
-                fileContent = "Simulated Audio Blob Content";
-                fileName = "recap_audio_myanmar.mp3";
-                mimeType = "audio/mp3";
+                fileContent = generatedSrtText;
+                fileName = "recap_audio_script.txt";
+                mimeType = "text/plain";
             } else if(type === 'video') {
                 const quality = document.getElementById('videoQuality').value;
-                fileContent = "Simulated Processed Video File";
+                fileContent = "Processed Video File Metadata";
                 fileName = `recap_video_${quality}.mp4`;
                 mimeType = "video/mp4";
             }
